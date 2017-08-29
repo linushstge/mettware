@@ -80,8 +80,8 @@
 
         </div>
         <div class="panel--body is--wide">
-            <h3>Summierte Anzahl: {$mettwoch.quantityTotal}</h3>
-            <h3>Summierte Kosten: {$mettwoch.sumAmount|currency}</h3>
+            <h3>Anzahl Brötchen: {$mettwoch.quantityTotal}</h3>
+            <h3>Gesamtsumme: {$mettwoch.sumAmount|currency}</h3>
         </div>
         <div class="panel--body is--wide">
             <form action="{url controller="mettwochorder"}" method="post">
