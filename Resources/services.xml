@@ -7,6 +7,7 @@
     <services>
         <service class="MettwochOrder\Subscriber\FrontendCheckoutSubscriber" id="mettwoch_order.subscriber.frontend_checkout_subscriber">
             <argument id="dbal_connection" type="service"/>
+            <argument id="models" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>
     </services>

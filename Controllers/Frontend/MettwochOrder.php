@@ -1,6 +1,4 @@
-<?php
-
-use Shopware\Components\Model\ModelManager;
+<?php declare(strict_types=1);
 
 class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Action
 {
@@ -10,20 +8,22 @@ class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Act
             $shippingDate = (new DateTime())->format('Y-m-d');
         }
 
-        /** @var ModelManager $modelManager */
-        $modelManager = $this->get('models');
+        $query = $this->get('dbal_connection')->createQueryBuilder();
 
-        $orderAttrRepo = $modelManager->getRepository('Shopware\Models\Attribute\Order');
+        $orderIds = $query->select('id')
+            ->from('s_order')
+            ->where('ordertime LIKE :orderTime')
+            ->setParameter('orderTime', '%'.$shippingDate.'%')
+            ->execute()
+            ->fetchAll(\PDO::FETCH_COLUMN);
 
-        $orderAttributes = $orderAttrRepo->findBy([
-            'mettwochOrderDate' => $shippingDate
-        ]);
+        $orderRepo = $this->get('models')->getRepository('Shopware\Models\Order\Order');
 
         $orders = [];
         $sumAmount = 0;
         $quantityTotal = 0;
-        foreach ($orderAttributes as $attribute) {
-            $order = $attribute->getOrder();
+        foreach ($orderIds as $orderId) {
+            $order = $orderRepo->find($orderId);
             $orders[] = $order;
 
             $sumAmount += $order->getInvoiceAmount();
