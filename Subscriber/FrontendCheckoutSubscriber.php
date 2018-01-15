@@ -4,6 +4,7 @@ namespace MettwochOrder\Subscriber;
 
 use Doctrine\DBAL\Connection;
 use Enlight\Event\SubscriberInterface;
+use Shopware\Components\Model\ModelManager;
 
 class FrontendCheckoutSubscriber implements SubscriberInterface
 {
@@ -13,12 +14,20 @@ class FrontendCheckoutSubscriber implements SubscriberInterface
     private $connection;
 
     /**
-     * FrontendCheckoutSubscriber constructor.
-     * @param Connection $connection
+     * @var ModelManager
      */
-    public function __construct(Connection $connection)
-    {
+    private $modelManager;
+
+    /**
+     * @param Connection $connection
+     * @param ModelManager $modelManager
+     */
+    public function __construct(
+        Connection $connection,
+        ModelManager $modelManager
+    ) {
         $this->connection = $connection;
+        $this->modelManager = $modelManager;
     }
 
     /**
@@ -49,22 +58,78 @@ class FrontendCheckoutSubscriber implements SubscriberInterface
             return;
         }
 
+        $orderNumber = $subject->View()->getAssign('sOrderNumber');
+
+        $order = $this->modelManager->getRepository('Shopware\Models\Order\Order')->findOneBy([
+            'number' => $orderNumber
+        ]);
+
         $this->connection->executeQuery('
             UPDATE 
-                s_order_attributes as attributes
-            INNER JOIN
-              s_order
-            ON
-              attributes.orderID = s_order.id
+                s_order
             SET
-              attributes.mettwoch_order_date = :shippingDate
+              ordertime = :shippingDate
             WHERE
-              s_order.ordernumber = :orderNumber
+              ordernumber = :orderNumber
             ',
             [
                 'shippingDate' => $shippingDate,
-                'orderNumber' => $subject->View()->getAssign('sOrderNumber')
+                'orderNumber' => $order->getNumber()
             ]
         );
+
+        // Abo-Commerce changes
+        $aboOrders = $this->connection->createQueryBuilder()
+            ->select('id')
+            ->from('s_plugin_swag_abo_commerce_orders')
+            ->where('order_id = :orderId')
+            ->setParameter('orderId', $order->getId())
+            ->execute()
+            ->fetchAll(\PDO::FETCH_COLUMN);
+
+        if (!$aboOrders) {
+            return;
+        }
+
+        $aboManager = $this->modelManager->getRepository('Shopware\CustomModels\SwagAboCommerce\Order');
+
+        $actualDate = \DateTime::createFromFormat('Y-m-d', $shippingDate);
+
+        foreach ($aboOrders as $aboOrder) {
+            $abo = $aboManager->find($aboOrder);
+
+            $abo->setCreated($actualDate);
+
+            $dueDate = clone $actualDate;
+            $dueDate->modify('+' . $abo->getDeliveryInterval() . ' ' . $this->getDateClass($abo->getDeliveryIntervalUnit()));
+
+            $abo->setDueDate($dueDate);
+
+            $lastDate = clone $actualDate;
+            $lastDate->modify('+' . $abo->getDuration() . ' ' . $this->getDateClass($abo->getDurationUnit()));
+            $abo->setLastRun($lastDate);
+
+            $this->modelManager->persist($abo);
+        }
+
+        $this->modelManager->flush();
+    }
+
+    /**
+     * @param string $type
+     * @return string
+     */
+    private function getDateClass(string $type): string
+    {
+        switch ($type) {
+            case 'weeks':
+            case 'week':
+                return 'week';
+            case 'months':
+            case 'month':
+                return 'month';
+            default:
+                return 'day';
+        }
     }
 }

@@ -36,9 +36,6 @@ class MettwochOrder extends Plugin
      */
     public function install(Plugin\Context\InstallContext $context)
     {
-        $attributeService = $this->container->get('shopware_attribute.crud_service');
-        $attributeService->update('s_order_attributes', 'mettwoch_order_date', 'date');
-
-        $this->container->get('models')->generateAttributeModels();
+        return true;
     }
 }
