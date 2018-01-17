@@ -13,6 +13,8 @@ class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Act
         $orderIds = $query->select('id')
             ->from('s_order')
             ->where('ordertime LIKE :orderTime')
+            ->andWhere('ordernumber != 0')
+            ->andWhere('status != -1')
             ->setParameter('orderTime', '%'.$shippingDate.'%')
             ->execute()
             ->fetchAll(\PDO::FETCH_COLUMN);
