@@ -5,6 +5,7 @@ namespace MettwochOrder\Subscriber;
 use Doctrine\DBAL\Connection;
 use Enlight\Event\SubscriberInterface;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Order\Order;
 
 class FrontendCheckoutSubscriber implements SubscriberInterface
 {
@@ -36,29 +37,83 @@ class FrontendCheckoutSubscriber implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'addMettwochShippingDate',
+            'Shopware_Controllers_Frontend_Checkout::finishAction::replace' => 'replaceFinishAction',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchCheckout',
         ];
     }
 
-    /**
-     * @param \Enlight_Event_EventArgs $args
-     */
-    public function addMettwochShippingDate(\Enlight_Event_EventArgs $args)
+    public function onPostDispatchCheckout(\Enlight_Event_EventArgs $args)
     {
         /** @var \Shopware_Controllers_Frontend_Checkout $subject */
         $subject = $args->getSubject();
 
         $request = $subject->Request();
 
-        if ($request->getActionName() !== 'finish' || !($shippingDate = $request->getParam('shippingDate'))) {
+        if ($request->getParam('mwOrderStop')) {
+            $subject->View()->assign('mwOrderStop', true);
+        }
+    }
+
+    /**
+     * @param \Enlight_Hook_HookArgs $args
+     */
+    public function replaceFinishAction(\Enlight_Hook_HookArgs $args)
+    {
+        /** @var \Shopware_Controllers_Frontend_Checkout $subject */
+        $subject = $args->getSubject();
+
+        $request = $subject->Request();
+
+        $shippingDate = $request->getParam('shippingDate');
+
+        if($shippingDate && $this->checkOrderStop($shippingDate)) {
+            $subject->redirect('checkout/confirm?mwOrderStop=1');
             return;
         }
 
+        if ($shippingDate) {
+            $subject->executeParent(
+                $args->getMethod(),
+                $args->getArgs()
+            );
+
+            $this->afterCreateOrder($shippingDate, (int) $subject->View()->getAssign('sOrderNumber'));
+            return;
+        }
+
+
+        $subject->executeParent(
+            $args->getMethod(),
+            $args->getArgs()
+        );
+    }
+
+    /**
+     * @param string $shippingDate
+     * @return bool
+     */
+    private function checkOrderStop(string $shippingDate): bool
+    {
+        $orderStopDate = $this->connection->createQueryBuilder()
+            ->select('order_stop_date')
+            ->from('mw_order')
+            ->where('order_stop_date = :orderStopDate')
+            ->setParameter('orderStopDate', $shippingDate)
+            ->execute()
+            ->fetchColumn();
+
+        return $orderStopDate === false ? false : true;
+    }
+
+    /**
+     * @param string $shippingDate
+     * @param int $orderNumber
+     */
+    private function afterCreateOrder(string $shippingDate, int $orderNumber)
+    {
         if (preg_match("[a-zA-Z]", $shippingDate)) {
             return;
         }
-
-        $orderNumber = $subject->View()->getAssign('sOrderNumber');
 
         $order = $this->modelManager->getRepository('Shopware\Models\Order\Order')->findOneBy([
             'number' => $orderNumber
@@ -78,6 +133,15 @@ class FrontendCheckoutSubscriber implements SubscriberInterface
             ]
         );
 
+        $this->aboOrder($shippingDate, $order);
+    }
+
+    /**
+     * @param string $shippingDate
+     * @param Order $order
+     */
+    private function aboOrder(string $shippingDate, Order $order)
+    {
         // Abo-Commerce changes
         $aboOrders = $this->connection->createQueryBuilder()
             ->select('id')
