@@ -3,6 +3,18 @@
 {block name="frontend_index_content_left"}{/block}
 
 {block name="frontend_index_content"}
+    {if $mettwoch.mwOrderStop}
+        {include file="frontend/_includes/messages.tpl" type="success" content="Bestellungen sind geperrt für heute"}
+    {/if}
+
+    {if $mettwoch.mwOrderReset}
+        {include file="frontend/_includes/messages.tpl" type="success" content="Bestellungen sind für heute wieder freigeschaltet"}
+    {/if}
+
+    {if $mettwoch.mwOrderResetFailure}
+        {include file="frontend/_includes/messages.tpl" type="error" content="Sie haben keine Berechtigung die Mett Bestellungen für heute wieder frei zu geben"}
+    {/if}
+
     <div class="panel has--border" style="margin-top: 30px">
         <div class="panel--title primary is--underline">
             Mettwoch Bestellungen für{if $mettwoch.shippingDate|date_format:'d.m.Y' == $smarty.now|date_format:'d.m.Y'} Heute, {/if} den {$mettwoch.shippingDate|date_format:'d.m.Y'}
@@ -85,8 +97,20 @@
         </div>
         <div class="panel--body is--wide">
             <form action="{url controller="mettwochorder"}" method="post">
-                <label for="shippingDate">Lieferdatum:</label> <input id="shippingDate" type="date" name="shippingDate" value="{$mettwoch.shippingDate}">
-                <input type="submit" class="btn is--primary" value="Liste anzeigen">
+
+
+                <div class="block-group">
+                    <div class="block" style="width:50%;">
+                        <label for="shippingDate">Lieferdatum:</label>
+                        <input id="shippingDate" type="date" name="shippingDate" value="{$mettwoch.shippingDate}">
+                        <input type="submit" class="btn is--primary" value="Liste anzeigen">
+
+                    </div>
+                    <div class="block" style="width:50%; text-align: right">
+                        <a class="btn" style="" href="{url controller=mettwochorder action=stopOrders}">Bestellungen stoppen</a>
+                    </div>
+                </div>
+
             </form>
         </div>
     </div>

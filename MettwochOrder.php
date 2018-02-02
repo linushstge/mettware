@@ -4,6 +4,7 @@ namespace MettwochOrder;
 
 use Doctrine\ORM\Tools\SchemaTool;
 use Shopware\Components\Plugin;
+use Shopware\Components\Plugin\Context\UpdateContext;
 
 class MettwochOrder extends Plugin
 {
@@ -38,4 +39,26 @@ class MettwochOrder extends Plugin
     {
         return true;
     }
+
+    public function update(UpdateContext $context)
+    {
+        if ($context->getCurrentVersion() < '1.3.0') {
+            $this->createMettwochTable();
+        }
+
+        parent::update($context);
+    }
+
+    private function createMettwochTable()
+    {
+        $connection = $this->container->get('dbal_connection');
+        $connection->executeQuery('
+                CREATE TABLE `mw_order` (
+                  `order_stop_date` DATE,
+                  UNIQUE (`order_stop_date`)
+                );
+            ');
+    }
+
+
 }
