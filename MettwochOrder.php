@@ -37,9 +37,14 @@ class MettwochOrder extends Plugin
      */
     public function install(Plugin\Context\InstallContext $context)
     {
+        $this->createMettwochTable();
+
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function update(UpdateContext $context)
     {
         if ($context->getCurrentVersion() < '1.3.0') {
@@ -53,12 +58,10 @@ class MettwochOrder extends Plugin
     {
         $connection = $this->container->get('dbal_connection');
         $connection->executeQuery('
-                CREATE TABLE `mw_order` (
+                CREATE TABLE IF NOT EXISTS `mw_order` (
                   `order_stop_date` DATE,
                   UNIQUE (`order_stop_date`)
                 );
             ');
     }
-
-
 }
