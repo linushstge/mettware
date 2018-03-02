@@ -102,7 +102,7 @@
                 <div class="block-group">
                     <div class="block" style="width:50%;">
                         <label for="shippingDate">Lieferdatum:</label>
-                        <input id="shippingDate" type="date" name="shippingDate" value="{$mettwoch.shippingDate}">
+                        <input class="datepicker" data-datepicker="true" name="shippingDate" type="text" data-defaultDate="{$smarty.now|date_format:"%Y-%m-%d"}"/>
                         <input type="submit" class="btn is--primary" value="Liste anzeigen">
 
                     </div>
