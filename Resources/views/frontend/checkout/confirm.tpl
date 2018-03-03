@@ -10,7 +10,7 @@
             <label for="shippingDate">Lieferdatum:</label>
         </div>
         <div class="panel--body is--wide">
-            <input class="datepicker" data-datepicker="true" name="shippingDate" type="text" data-defaultDate="{$smarty.now|date_format:"%Y-%m-%d"}"/>
+            <input class="datepicker" data-url="{url controller=mettwochorder action=saveDate}" data-datepicker="true" name="shippingDate" type="text" data-defaultDate="{$mettwochDate}"/>
         </div>
     </div>
 {/block}
