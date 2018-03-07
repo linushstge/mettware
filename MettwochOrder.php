@@ -2,7 +2,7 @@
 
 namespace MettwochOrder;
 
-use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\Common\Collections\ArrayCollection;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\UpdateContext;
 
@@ -16,7 +16,15 @@ class MettwochOrder extends Plugin
         return [
             'Enlight_Controller_Action_PostDispatchSecure' => 'addTemplateDir',
             'Enlight_Controller_Front_StartDispatch' => 'onStartDispatch',
+            'Theme_Compiler_Collect_Plugin_JavaScript' => 'getJavaScriptCollection',
         ];
+    }
+
+    public function getJavaScriptCollection()
+    {
+        return new ArrayCollection([
+            __DIR__ . '/Resources/views/frontend/_public/src/js/date-save.js',
+        ]);
     }
 
     public function onStartDispatch()
@@ -29,7 +37,10 @@ class MettwochOrder extends Plugin
      */
     public function addTemplateDir(\Enlight_Controller_ActionEventArgs $args)
     {
-        $args->getSubject()->View()->addTemplateDir(__DIR__ . '/Resources/views');
+        $view = $args->getSubject()->View();
+        $view->addTemplateDir(__DIR__ . '/Resources/views');
+
+        $view->assign('mettwochDate', Shopware()->Session()->get('mettwochDate', (new \DateTime())->format('Y-m-d')));
     }
 
     /**

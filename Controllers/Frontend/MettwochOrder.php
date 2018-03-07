@@ -97,4 +97,10 @@ class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Act
             ->execute()
             ->fetchAll(\PDO::FETCH_COLUMN);
     }
+
+    public function saveDateAction()
+    {
+        Shopware()->Session()->offsetSet('mettwochDate', $this->Request()->getParam('mettwochDate', (new \DateTime())->format('Y-m-d')));
+        exit();
+    }
 }

@@ -143,13 +143,17 @@ class FrontendCheckoutSubscriber implements SubscriberInterface
     private function aboOrder(string $shippingDate, Order $order)
     {
         // Abo-Commerce changes
-        $aboOrders = $this->connection->createQueryBuilder()
-            ->select('id')
-            ->from('s_plugin_swag_abo_commerce_orders')
-            ->where('order_id = :orderId')
-            ->setParameter('orderId', $order->getId())
-            ->execute()
-            ->fetchAll(\PDO::FETCH_COLUMN);
+        try {
+            $aboOrders = $this->connection->createQueryBuilder()
+                ->select('id')
+                ->from('s_plugin_swag_abo_commerce_orders')
+                ->where('order_id = :orderId')
+                ->setParameter('orderId', $order->getId())
+                ->execute()
+                ->fetchAll(\PDO::FETCH_COLUMN);
+        } catch (\Exception $e) {
+            $aboOrders = false;
+        }
 
         if (!$aboOrders) {
             return;
