@@ -32,7 +32,9 @@ class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Act
 
             /** @var \Shopware\Models\Order\Detail $detail */
             foreach ($order->getDetails() as $detail) {
-                $quantityTotal += $detail->getQuantity();
+                if ($detail->getMode() === 0) {
+                    $quantityTotal += $detail->getQuantity();
+                }
             }
         }
 

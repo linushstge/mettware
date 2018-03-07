@@ -51,7 +51,9 @@
                             <div class="column--value">
                                 {$quantity = 0}
                                 {foreach $order->getDetails() as $details}
-                                    {$quantity = $quantity + $details->getQuantity()}
+                                    {if $details->getMode() === 0}
+                                        {$quantity = $quantity + $details->getQuantity()}
+                                    {/if}
                                 {/foreach}
                                 {$quantity} Brötchen
                             </div>
