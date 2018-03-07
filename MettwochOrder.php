@@ -14,7 +14,7 @@ class MettwochOrder extends Plugin
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PostDispatchSecure' => 'addTemplateDir',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend' => 'addTemplateDir',
             'Enlight_Controller_Front_StartDispatch' => 'onStartDispatch',
             'Theme_Compiler_Collect_Plugin_JavaScript' => 'getJavaScriptCollection',
         ];
