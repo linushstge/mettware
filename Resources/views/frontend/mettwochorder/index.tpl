@@ -23,20 +23,18 @@
 
             <div class="panel--table">
                 <div class="orders--table-header panel--tr">
-                    <div class="panel--th column--date">Bestellnummer</div>
+                    <div class="panel--th" style="width: 15%">Bestellnummer</div>
 
-                    <div class="panel--th column--id">Anzahl</div>
+                    <div class="panel--th" style="width: 40%">Anzahl</div>
 
-                    <div class="panel--th column--dispatch">Bestellsumme</div>
+                    <div class="panel--th" style="width: 20%">Bestellsumme</div>
 
-                    <div class="panel--th column--status">Name</div>
-
-                    <div class="panel--th column--actions">Status</div>
+                    <div class="panel--th" style="width: 25%">Name</div>
                 </div>
 
                 {foreach $mettwoch.orders as $order}
                     <div class="order--item panel--tr">
-                        <div class="order--date panel--td column--date">
+                        <div class="order--date panel--td" style="width: 15%">
                             <div class="column--label">
                                 column
                             </div>
@@ -44,7 +42,7 @@
                                 {$order->getNumber()}
                             </div>
                         </div>
-                        <div class="order--date panel--td column--date">
+                        <div class="order--date panel--td column--status" style="width: 40%">
                             <div class="column--label">
                                 column
                             </div>
@@ -57,7 +55,7 @@
                                 {/foreach}
                             </div>
                         </div>
-                        <div class="order--date panel--td column--date">
+                        <div class="order--date panel--td column--status" style="width: 20%">
                             <div class="column--label">
                                 column
                             </div>
@@ -65,25 +63,12 @@
                                 {$order->getInvoiceAmount()|currency}
                             </div>
                         </div>
-                        <div class="order--date panel--td column--date">
+                        <div class="order--date panel--td column--status" style="width: 25%">
                             <div class="column--label">
                                 column
                             </div>
                             <div class="column--value">
                                 {$order->getBilling()->getFirstName()} {$order->getBilling()->getLastName()}
-                            </div>
-                        </div>
-                        <div class="order--date panel--td column--date">
-                            <div class="column--label">
-                                column
-                            </div>
-                            <div class="column--value is--align-center">
-
-                                {if $order->getPaymentStatus()->getId() == 12}
-                                    <i class="icon--check"></i> Bezahlt
-                                {else}
-                                    <i class="icon--cross"></i> Zahlung ausstehend
-                                {/if}
                             </div>
                         </div>
                     </div>
