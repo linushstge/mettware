@@ -51,7 +51,7 @@
                             <div class="column--value">
                                 {foreach $order->getDetails() as $details}
                                     {if $details->getMode() === 0}
-                                        {$details->getQuantity()}: {$details->getArticleName()}
+                                        {$details->getQuantity()}x {$details->getArticleName()}
                                         <br/>
                                     {/if}
                                 {/foreach}
@@ -95,8 +95,8 @@
         <div class="panel--body is--wide">
             {$productsTotal = 0}
             {foreach $mettwoch.quantityTotal as $totalQuantities}
-                <h3>Anzahl {$totalQuantities.name}: {$totalQuantities.quantity}</h3>
-                {$productsTotal = $productsTotal + 1}
+                <h3>Anzahl: {$totalQuantities.quantity}x {$totalQuantities.name}</h3>
+                {$productsTotal = $productsTotal + $totalQuantities.quantity}
             {/foreach}
             <h3>Gesamtanzahl: {$productsTotal}</h3>
             <h3>Gesamtsumme: {$mettwoch.sumAmount|currency}</h3>
