@@ -23,7 +23,7 @@ class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Act
 
         $orders = [];
         $sumAmount = 0;
-        $quantityTotal = 0;
+        $quantityTotal = [];
         foreach ($orderIds as $orderId) {
             $order = $orderRepo->find($orderId);
             $orders[] = $order;
@@ -33,7 +33,14 @@ class Shopware_Controllers_Frontend_MettwochOrder extends Enlight_Controller_Act
             /** @var \Shopware\Models\Order\Detail $detail */
             foreach ($order->getDetails() as $detail) {
                 if ($detail->getMode() === 0) {
-                    $quantityTotal += $detail->getQuantity();
+                    $quantityTotal[$detail->getArticleNumber()]['name'] = $detail->getArticleName();
+
+                    if (array_key_exists($detail->getArticleNumber(), $quantityTotal))
+                    {
+                        $quantityTotal[$detail->getArticleNumber()]['quantity'] += $detail->getQuantity();
+                        continue;
+                    }
+                    $quantityTotal[$detail->getArticleNumber()]['quantity'] = $detail->getQuantity();
                 }
             }
         }
